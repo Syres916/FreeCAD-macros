@@ -38,7 +38,7 @@ import itertools
 import configparser
 import os
 from importlib import reload 
-importAliasOk=True
+importAliasOk = True
 
 
 
@@ -46,57 +46,56 @@ importAliasOk=True
 # part code for alias
 #################################################################################
 # parameters for alias creation
-separateur=" "      # typically put " " so blanks will be replaced by nouveauCaract
-nouveauCaract=''    #Put for example "_" to have the separators replaced by "_". Put "" to have no separator
-majuscule=True      #set to True if you want  "Diametre du cercle" to be "DiametreDuCercle"
-changeTexteCellule=False  # the text will only be changed if changeCellText is True. 
+separateur = " "      # typically put " " so blanks will be replaced by nouveauCaract
+nouveauCaract = ''    #Put for example "_" to have the separators replaced by "_". Put "" to have no separator
+majuscule = True      #set to True if you want  "Diametre du cercle" to be "DiametreDuCercle"
+changeTexteCellule = False  # the text will only be changed if changeCellText is True. 
                           # This does not change anything for the allias itself
-premierCaractereEnMinuscule=True # Force the first character to be in lower case
+premierCaractereEnMinuscule = True # Force the first character to be in lower case
 
 # list of characters to be replaced by an equivalent. for example 'é' will be replaced by 'e
 # if you add characters, please send me a private message. Il will eventually add it in my code.
-caracEquivalents =[ ['é','e'],['è','e'],['à','a'],['@','a'],['&','e'],['ç','c'],
+caracEquivalents = [ ['é','e'],['è','e'],['à','a'],['@','a'],['&','e'],['ç','c'],
                   ['²','2'],["'",''],['?',''],['"',''],['(',''],[')',''],['#',''],
                   ['$',''],['+',''],['-',''],['*',''],['/',''],['\\',''] ]
 
 def remplaceCartatParEquivalent(caractere):
 # replaces a character with its equivalent if it exists
-    caracResult=caractere   
+    caracResult = caractere   
     for couple in caracEquivalents:
-        if (couple[0]==caractere):
-            caracResult=couple[1]
+        if (couple[0] == caractere):
+            caracResult = couple[1]
             break
     return caracResult
 
 
 def remplaceCararcDansMot(mot):
 #replaces all characters of the word with its equivalent if it exists
-    motResult=mot
+    motResult = mot
     for caract in mot:
-        a=remplaceCartatParEquivalent(caract)
-        motResult=motResult.replace(caract,a)
+        a = remplaceCartatParEquivalent(caract)
+        motResult = motResult.replace(caract, a)
     return motResult
-
 
 
 def traitementChaineSource(chaineSource,separateur,nouveauCaract,majuscule):
 # If separator is ' ' and nouveauCaract is '_', and majuscule is True
 # transforms "Diametre du cylindre" into "Diametre_Du_Cylindre
-    chaineResult=''
-    first=True
+    chaineResult = ''
+    first = True
     carctDeSeparation=''
     for mots in chaineSource.split(separateur): 
-        mots=remplaceCararcDansMot(mots)
+        mots = remplaceCararcDansMot(mots)
         if (not (first)):
-            carctDeSeparation=nouveauCaract 
+            carctDeSeparation = nouveauCaract 
         if (majuscule):
-            chaineResult=chaineResult+nouveauCaract+mots[:1].upper()+mots[1:]
+            chaineResult = chaineResult + nouveauCaract + mots[:1].upper() + mots[1:]
             # We use "[:1]" instead of "[0]", 
             # for no crash in case of an empty string (which happens if the cell is empty)
         else:
-            chaineResult=chaineResult+nouveauCaract+mots
+            chaineResult = chaineResult + nouveauCaract + mots
     if premierCaractereEnMinuscule :
-        chaineResult=chaineResult[:1].lower()+chaineResult[1:]
+        chaineResult = chaineResult[:1].lower() + chaineResult[1:]
     return chaineResult
 
 
@@ -108,7 +107,7 @@ def setAlias():
     # of where he want the alias to be created
     # so test if an object is selected :
     # result : False if macro can continue.
-    if len(sels)!=0 :
+    if len(sels) != 0 :
         return False
     else :
          ### A dialogue is displayed asking the user if he is sure
@@ -122,7 +121,7 @@ def setAlias():
     aw = Gui.getMainWindow().centralWidget().activeSubWindow() # Store the active window       
     #mySpreadSheet=trouveSheet(aw)
     try :
-        mySpreadSheet=Gui.ActiveDocument.ActiveView.getSheet()
+        mySpreadSheet = Gui.ActiveDocument.ActiveView.getSheet()
     except :
          QtWidgets.QMessageBox.warning(Gui.getMainWindow(), "Warning", "No active spreadsheet with selected cells.")
          return True
@@ -132,18 +131,18 @@ def setAlias():
     ### We define a function that will return the cell identifier from its row (r) and column (c) numbers
     ### Numbers start at 0 for the first row/column
     ### Columns are correctly managed with a 2-letter identifier
-    cellName = lambda r,c:'{}{}{}'.format(chr(c//26 + 64) if c//26 > 0 else '', chr(c%26+65), r+1)
+    cellName = lambda r,c:'{}{}{}'.format(chr(c//26 + 64) if c//26 > 0 else '', chr(c%26+65), r + 1)
 
     # we check that one of the cells is not a numeric. If not, message and exit
     for item in sel_items: # The selected cells are scanned
         cell = cellName(item.row(),item.column()) # We retrieve the cell ID
-        activeCellContenu=mySpreadSheet.getContents(cell)
-        f=''
+        activeCellContenu = mySpreadSheet.getContents(cell)
+        f = ''
         try :
-            f=float(activeCellContenu)
+            f = float(activeCellContenu)
         except :
             pass            
-        if f!='' :
+        if f != '' :
             QtWidgets.QMessageBox.warning(Gui.getMainWindow(), 
                 "Warning", "There is a number in one of the selected cells."+
                 " Alias is not possible. \nTry again after correction")
@@ -153,12 +152,12 @@ def setAlias():
     for item in sel_items: # The selected cells are scanned
         cell = cellName(item.row(),item.column()) # The cell identifier is retrieved
         next_cell = cellName(item.row(), item.column()+1) # We get the ID of the cell next to the right
-        activeCellContenu=mySpreadSheet.getContents(cell)
+        activeCellContenu = mySpreadSheet.getContents(cell)
         # processing the character string contained in the cell
-        activeCellContenu=traitementChaineSource(activeCellContenu,separateur,nouveauCaract,majuscule)
+        activeCellContenu = traitementChaineSource(activeCellContenu, separateur, nouveauCaract, majuscule)
         if changeTexteCellule:# if the changeCellText parameter is set to True then we replace the text in the cell
             mySpreadSheet.set(cell, activeCellContenu)
-        alias=activeCellContenu
+        alias = activeCellContenu
 
         try: # Bloc try to recover errors
             mySpreadSheet.setAlias(next_cell, alias) # The alias is assigned to the right-hand neighbouring cell
@@ -191,14 +190,14 @@ def isExistSpreadSheet() :
             if obj.TypeId == 'Spreadsheet::Sheet':
                 return obj
         return None
-    mySpreadSheet=firstSpreadSheet()
+    mySpreadSheet = firstSpreadSheet()
     if not mySpreadSheet :
         wantNewSpreadSheet = QtWidgets.QMessageBox.question(None, "No spreadsheet detected",
         "No spreadsheet in your document. Create one ?",
         QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
 
         if wantNewSpreadSheet == QtWidgets.QMessageBox.Yes:
-            mySpreadSheet=App.activeDocument().addObject('Spreadsheet::Sheet','Spreadsheet')
+            mySpreadSheet = App.activeDocument().addObject('Spreadsheet::Sheet', 'Spreadsheet')
             mySpreadSheet.ViewObject.doubleClicked()
             return 'new'
         else :
@@ -321,7 +320,7 @@ class getConstraintType(QtGui.QDialog):
 # use : activateSketchEditingWindow()
 #=======================================================
 def activateSketchEditingWindow():
-    def searchForNode(tree, childName, maxLevel=0):
+    def searchForNode(tree, childName, maxLevel = 0):
         return recursiveSearchForNode(tree, childName, maxLevel, 1)
 
     def recursiveSearchForNode(tree, childName, maxLevel, currentLevel):
@@ -332,7 +331,7 @@ def activateSketchEditingWindow():
                 return False;
             else:
                 for child in tree.getChildren():
-                    if recursiveSearchForNode(child, childName, maxLevel, currentLevel+1):
+                    if recursiveSearchForNode(child, childName, maxLevel, currentLevel + 1):
                         return True
         except:
             pass
@@ -346,9 +345,9 @@ def activateSketchEditingWindow():
     if not views:
         QtWidgets.QMessageBox.information(Gui.getMainWindow(), "Activate window", "No 3D view opened for active document")
         return
-    editView=None
+    editView = None
     for view in views:
-        if searchForNode(view.getSceneGraph(), "Sketch_EditRoot",3):
+        if searchForNode(view.getSceneGraph(), "Sketch_EditRoot", 3):
             editView = view
             break
     if not editView:
@@ -377,68 +376,68 @@ def activateSketchEditingWindow():
 # -x,y : coordinates of the point
 #####################################################################################
 def featuresObjSelected (mySketch,sel,numOrdreObjSelected,indexExtremite) :
-    indexExtremiteLine=1
-    indexObjectHavingPoint=-10
-    typeIdGeometry=None
-    x,y=0,0
-    itemName=sel.SubElementNames[numOrdreObjSelected] # ex Edge5 ( line)
-    if itemName=='RootPoint' :
-        typeInSubElementName='RootPoint'
-        indexObjectHavingPoint=-1
-        typeIdGeometry=mySketch.Geometry[indexObjectHavingPoint].TypeId
-        x,y=0,0
+    indexExtremiteLine = 1
+    indexObjectHavingPoint =- 10
+    typeIdGeometry = None
+    x, y = 0, 0
+    itemName = sel.SubElementNames[numOrdreObjSelected] # ex Edge5 ( line)
+    if itemName == 'RootPoint' :
+        typeInSubElementName = 'RootPoint'
+        indexObjectHavingPoint =- 1
+        typeIdGeometry = mySketch.Geometry[indexObjectHavingPoint].TypeId
+        x, y = 0, 0
     else :
         typeInSubElementName, numInNameStr = [''.join(c) for _, c in itertools.groupby(itemName, str.isalpha)] # Edge5 renvoie'Edge' et '5'
-        numInName=int(numInNameStr)
+        numInName = int(numInNameStr)
 
     # only one selected object
-    if typeInSubElementName == 'Edge'and len(sel.SubElementNames)==1: # selection is only one line
-        indexObjectHavingPoint=numInName-1
-        indexExtremiteLine=indexExtremite
-        typeIdGeometry=mySketch.Geometry[indexObjectHavingPoint].TypeId
+    if typeInSubElementName == 'Edge' and len(sel.SubElementNames) == 1: # selection is only one line
+        indexObjectHavingPoint = numInName - 1
+        indexExtremiteLine = indexExtremite
+        typeIdGeometry = mySketch.Geometry[indexObjectHavingPoint].TypeId
         # typeIdGeometry : 'Part::GeomCircle' or 'Part::GeomLineSegment'
         if typeIdGeometry in  ['Part::GeomLineSegment'] :
             if indexExtremite == 1 :
-                x=mySketch.Geometry[indexObjectHavingPoint].StartPoint.x
-                y=mySketch.Geometry[indexObjectHavingPoint].StartPoint.y
+                x = mySketch.Geometry[indexObjectHavingPoint].StartPoint.x
+                y = mySketch.Geometry[indexObjectHavingPoint].StartPoint.y
             elif indexExtremite == 2 :
-                x=mySketch.Geometry[indexObjectHavingPoint].EndPoint.x
-                y=mySketch.Geometry[indexObjectHavingPoint].EndPoint.y
+                x = mySketch.Geometry[indexObjectHavingPoint].EndPoint.x
+                y = mySketch.Geometry[indexObjectHavingPoint].EndPoint.y
 
     # We selected a circle but for center (two objects selected)
-    if typeInSubElementName == 'Edge'and len(sel.SubElementNames)==2:
-        indexObjectHavingPoint=numInName-1
-        typeIdGeometry=mySketch.Geometry[indexObjectHavingPoint].TypeId
+    if typeInSubElementName == 'Edge' and len(sel.SubElementNames) == 2:
+        indexObjectHavingPoint = numInName-1
+        typeIdGeometry = mySketch.Geometry[indexObjectHavingPoint].TypeId
         if typeIdGeometry in  ['Part::GeomCircle','Part::GeomArcOfCircle'] :
-            x=mySketch.Geometry[indexObjectHavingPoint].Location.x
-            y=mySketch.Geometry[indexObjectHavingPoint].Location.y
-            indexExtremiteLine=3 # 3 for center
+            x = mySketch.Geometry[indexObjectHavingPoint].Location.x
+            y = mySketch.Geometry[indexObjectHavingPoint].Location.y
+            indexExtremiteLine = 3 # 3 for center
 
     # We selected a vertex
-    if typeInSubElementName=='Vertex' : # selection is 2 points. sel is a vertex (a point of a line) :
-        indexObjectHavingPoint, indexExtremiteLine = sel.Object.getGeoVertexIndex(numInName-1)
-        typeIdGeometry=mySketch.Geometry[indexObjectHavingPoint].TypeId
-        if mySketch.Geometry[indexObjectHavingPoint].TypeId=='Part::GeomLineSegment' :
-            if indexExtremiteLine==1 :
-                x=mySketch.Geometry[indexObjectHavingPoint].StartPoint.x
-                y=mySketch.Geometry[indexObjectHavingPoint].StartPoint.y
-            if indexExtremiteLine==2:
-                x=mySketch.Geometry[indexObjectHavingPoint].EndPoint.x
-                y=mySketch.Geometry[indexObjectHavingPoint].EndPoint.y
-        if mySketch.Geometry[indexObjectHavingPoint].TypeId=='Part::GeomPoint' :
-            x=mySketch.Geometry[indexObjectHavingPoint].X
-            y=mySketch.Geometry[indexObjectHavingPoint].Y
+    if typeInSubElementName == 'Vertex' : # selection is 2 points. sel is a vertex (a point of a line) :
+        indexObjectHavingPoint, indexExtremiteLine = sel.Object.getGeoVertexIndex(numInName - 1)
+        typeIdGeometry = mySketch.Geometry[indexObjectHavingPoint].TypeId
+        if mySketch.Geometry[indexObjectHavingPoint].TypeId == 'Part::GeomLineSegment' :
+            if indexExtremiteLine == 1 :
+                x = mySketch.Geometry[indexObjectHavingPoint].StartPoint.x
+                y = mySketch.Geometry[indexObjectHavingPoint].StartPoint.y
+            if indexExtremiteLine == 2:
+                x = mySketch.Geometry[indexObjectHavingPoint].EndPoint.x
+                y = mySketch.Geometry[indexObjectHavingPoint].EndPoint.y
+        if mySketch.Geometry[indexObjectHavingPoint].TypeId == 'Part::GeomPoint' :
+            x = mySketch.Geometry[indexObjectHavingPoint].X
+            y = mySketch.Geometry[indexObjectHavingPoint].Y
         # we select a vertex Circle (so the center)
         if mySketch.Geometry[indexObjectHavingPoint].TypeId in ['Part::GeomCircle','Part::GeomArcOfCircle'] :
-            x=mySketch.Geometry[indexObjectHavingPoint].Location.x
-            y=mySketch.Geometry[indexObjectHavingPoint].Location.y
+            x = mySketch.Geometry[indexObjectHavingPoint].Location.x
+            y = mySketch.Geometry[indexObjectHavingPoint].Location.y
 
-    if typeInSubElementName=='Constraint' and len(sel.SubElementNames)==1 :
-        indexConstraint=numInName-1
-        indexObjectHavingPoint=indexConstraint
-        typeIdGeometry='Constraint'
+    if typeInSubElementName == 'Constraint' and len(sel.SubElementNames) == 1 :
+        indexConstraint = numInName - 1
+        indexObjectHavingPoint = indexConstraint
+        typeIdGeometry = 'Constraint'
 
-    return typeIdGeometry,typeInSubElementName, indexObjectHavingPoint, indexExtremiteLine, x ,y
+    return typeIdGeometry,typeInSubElementName, indexObjectHavingPoint, indexExtremiteLine, x, y
 
 
 
@@ -459,16 +458,16 @@ def procEnd():
 # 'Sketcher::SketchObject' for sketches etc...
 # output: an array of sketch objects, spreadsheets etc.
 ##########################################
-def getGuiObjsSelect(type=''):
-    tabGObjSelect=[]
-    selections=Gui.Selection.getCompleteSelection()
+def getGuiObjsSelect(type = ''):
+    tabGObjSelect = []
+    selections = Gui.Selection.getCompleteSelection()
     for sel in (selections):
         if hasattr(sel, 'Object'):   # depend freecad version
-            if type=='' or sel.Object.TypeId==type :
+            if type == '' or sel.Object.TypeId == type :
                 tabGObjSelect.append(sel.Object)
         else :
-            obj=App.ActiveDocument.getObject(sel.Name)
-            if type=='' or obj.TypeId==type :
+            obj = App.ActiveDocument.getObject(sel.Name)
+            if type == '' or obj.TypeId == type :
                 tabGObjSelect.append(obj)
     return tabGObjSelect
 
@@ -478,8 +477,8 @@ def getGuiObjsSelect(type=''):
 ##########################################
 def main():
     #initialization
-    sheckBoxConstraintConflicState=False
-    indexConstraint=-1
+    sheckBoxConstraintConflicState = False
+    indexConstraint =- 1
    
     if isExistSpreadSheet() in ['no','new'] :
         return
@@ -490,20 +489,20 @@ def main():
             return    
     
     try :
-        mySketch=ActiveSketch
+        mySketch = ActiveSketch
     except :
-        QtWidgets.QMessageBox.information(None,"Warning","Select object must be done in edition mode")
+        QtWidgets.QMessageBox.information(None, "Warning", "Select object must be done in edition mode")
         activateSketchEditingWindow()
         return
-    mySketchName=mySketch.Name #actually not use
+    mySketchName = mySketch.Name #actually not use
 
     # Part SpreadSheet
     #---------------------------------
-    sheets=getGuiObjsSelect('Spreadsheet::Sheet')
+    sheets = getGuiObjsSelect('Spreadsheet::Sheet')
     for sheet in sheets :
         Gui.Selection.removeSelection(FreeCAD.ActiveDocument.Name,sheet.Name)
     try :
-        mySpreadSheet=Gui.ActiveDocument.ActiveView.getSheet()
+        mySpreadSheet = Gui.ActiveDocument.ActiveView.getSheet()
     except :
         QtWidgets.QMessageBox.information(None,"Warning",
                 "1- Select a line or 2 points"+
@@ -524,20 +523,20 @@ def main():
         QtWidgets.QMessageBox.information(None,"Warning",
                  "Click on a cell with a numeric value before runing the macro")
         return
-    cellAlias= App.ActiveDocument.getObject(mySpreadSheetName).getAlias(cellCode)
+    cellAlias = App.ActiveDocument.getObject(mySpreadSheetName).getAlias(cellCode)
 
 
     # Part sketch
     #----------------------------
     sels = Gui.Selection.getSelectionEx()
 
-    if len(sels)==0 or len(sels[0].SubElementNames)==0 :
-        QtWidgets.QMessageBox.information(None,"Warning","Anathing is select.\n"+
+    if len(sels) == 0 or len(sels[0].SubElementNames) == 0 :
+        QtWidgets.QMessageBox.information(None,"Warning","Anathing is select.\n" +
               "Select 1 line, 2 points or a constraint in a sketch before selecting a cell in the spreadsheet")
         activateSketchEditingWindow()
         return
-    elif len(sels[0].SubElementNames) >2  :
-        QtWidgets.QMessageBox.information(None,"Warning","Too many objects selected.\n"+
+    elif len(sels[0].SubElementNames) > 2  :
+        QtWidgets.QMessageBox.information(None,"Warning","Too many objects selected.\n" +
               "Select 1 line, 2 points or a constraint in a sketch before selecting a cell in the spreadsheet")
         activateSketchEditingWindow()
         return
@@ -545,24 +544,24 @@ def main():
 
         # only one obj selected
         #------------------------
-        if len(sels[0].SubElementNames)==1 : # only one obj selected
+        if len(sels[0].SubElementNames) == 1 : # only one obj selected
             #startPoint of the line
-            (typeIdGeometry1,typeInSubElementName1, indexObjectHavingPoint1, indexExtremiteLine1, x1 ,y1)=featuresObjSelected (ActiveSketch, sels[0],0,1)
-            if typeInSubElementName1=='Constraint' and len(sels[0].SubElementNames)==1 :
-                indexConstraint=indexObjectHavingPoint1
-            elif typeIdGeometry1=='Part::GeomLineSegment' :
-                (typeIdGeometry2, typeInSubElementName2, indexObjectHavingPoint2, indexExtremiteLine2, x2 ,y2)=featuresObjSelected (ActiveSketch, sels[0],0,2)
+            (typeIdGeometry1, typeInSubElementName1, indexObjectHavingPoint1, indexExtremiteLine1, x1, y1)=featuresObjSelected (ActiveSketch, sels[0],0,1)
+            if typeInSubElementName1 == 'Constraint' and len(sels[0].SubElementNames) == 1 :
+                indexConstraint = indexObjectHavingPoint1
+            elif typeIdGeometry1 == 'Part::GeomLineSegment' :
+                (typeIdGeometry2, typeInSubElementName2, indexObjectHavingPoint2, indexExtremiteLine2, x2, y2) = featuresObjSelected (ActiveSketch, sels[0],0,2)
 
         # two obj selected
         #------------------------
-        if len(sels[0].SubElementNames)== 2: # two obj selected
-            (typeIdGeometry1,typeInSubElementName1, indexObjectHavingPoint1, indexExtremiteLine1, x1 ,y1)=featuresObjSelected (ActiveSketch, sels[0],0,1)
+        if len(sels[0].SubElementNames) == 2: # two obj selected
+            (typeIdGeometry1, typeInSubElementName1, indexObjectHavingPoint1, indexExtremiteLine1, x1, y1)=featuresObjSelected (ActiveSketch, sels[0],0,1)
 
-            print('575 typeIdGeometry1',typeIdGeometry1)
-            (typeIdGeometry2,typeInSubElementName2, indexObjectHavingPoint2, indexExtremiteLine2, x2 ,y2)=featuresObjSelected (ActiveSketch, sels[0],1,1)
+            print('575 typeIdGeometry1', typeIdGeometry1)
+            (typeIdGeometry2, typeInSubElementName2, indexObjectHavingPoint2, indexExtremiteLine2, x2, y2) = featuresObjSelected (ActiveSketch, sels[0],1,1)
             if ((typeInSubElementName1 not in ('Vertex' , 'RootPoint') or typeInSubElementName2 not in ('Vertex','RootPoint'))
                     and not(typeIdGeometry1 in ('Part::GeomCircle','Part::GeomArcOfCircle') and typeInSubElementName1 in ['Edge'])) :
-                QtWidgets.QMessageBox.information(None,"Warning","2 objects are selected but not 2 points .\n"+
+                QtWidgets.QMessageBox.information(None,"Warning", "2 objects are selected but not 2 points .\n" +
                 "Select 1 line, 2 points or a constraint in a sketch before selecting a cell in the spreadsheet")
                 activateSketchEditingWindow()
                 return
@@ -571,30 +570,30 @@ def main():
     #--------------------------------------
     # line or points have been selected have a look if we need to swap points
     # -------------------------------------
-    if ((len(sels[0].SubElementNames)== 1 and typeIdGeometry1 in['Part::GeomLineSegment'] )
-           or (len(sels[0].SubElementNames)== 2 and typeIdGeometry1
-            in['Part::GeomLineSegment','Part::GeomCircle', 'Part::GeomArcOfCircle', 'Part::GeomPoint'] )) :
+    if ((len(sels[0].SubElementNames) == 1 and typeIdGeometry1 in ['Part::GeomLineSegment'] )
+           or (len(sels[0].SubElementNames) == 2 and typeIdGeometry1
+            in['Part::GeomLineSegment', 'Part::GeomCircle', 'Part::GeomArcOfCircle', 'Part::GeomPoint'] )) :
 
         # ask the user what kind of constraint he wants
         #------------------------------------
         # to give focus on the good button
         # (Button DistanceX if the two points are more horizontal than vertical)
-        if abs(x1-x2) > abs(y1-y2) :
+        if abs(x1 - x2) > abs(y1 - y2) :
             buttonHavingFocus='DistanceX'
         else :
             buttonHavingFocus='DistanceY'
         form = getConstraintType(buttonHavingFocus)
         form.exec_()
         # is the checkboxSheced ?
-        sheckBoxConstraintConflicState=form.getCheckBoxState()
+        sheckBoxConstraintConflicState = form.getCheckBoxState()
         if form.choiceConstraint in ('Cancel','') :
             activateSketchEditingWindow()
             return
-        myConstraint=form.choiceConstraint # 'DistanceX' or 'DistanceY' or 'Distance'
+        myConstraint = form.choiceConstraint # 'DistanceX' or 'DistanceY' or 'Distance'
 
-        if (myConstraint == 'DistanceX' and x1>x2) or  (myConstraint == 'DistanceY' and y1>y2) :
-                indexObjectHavingPoint1,indexObjectHavingPoint2=indexObjectHavingPoint2,indexObjectHavingPoint1
-                indexExtremiteLine1,indexExtremiteLine2=indexExtremiteLine2,indexExtremiteLine1
+        if (myConstraint == 'DistanceX' and x1 > x2) or  (myConstraint == 'DistanceY' and y1 > y2) :
+                indexObjectHavingPoint1, indexObjectHavingPoint2 = indexObjectHavingPoint2, indexObjectHavingPoint1
+                indexExtremiteLine1, indexExtremiteLine2 = indexExtremiteLine2, indexExtremiteLine1
 
 
 
@@ -602,22 +601,22 @@ def main():
 
     # create constraint
     #=================================
-    if cellAlias==None :
-        cellExpression= mySpreadSheetName+'.'+cellCode
+    if cellAlias == None :
+        cellExpression = mySpreadSheetName + '.' + cellCode
     else :
-        cellExpression= mySpreadSheetName+'.'+cellAlias
+        cellExpression = mySpreadSheetName + '.' + cellAlias
 
 
-    if (len(sels[0].SubElementNames)== 1 and typeIdGeometry1 in['Part::GeomCircle','Part::GeomArcOfCircle'] ) :
-        indexConstraint=mySketch.addConstraint(Sketcher.Constraint('Diameter', indexObjectHavingPoint1, cellContents))
+    if (len(sels[0].SubElementNames) == 1 and typeIdGeometry1 in ['Part::GeomCircle','Part::GeomArcOfCircle'] ) :
+        indexConstraint = mySketch.addConstraint(Sketcher.Constraint('Diameter', indexObjectHavingPoint1, cellContents))
 
-    elif typeIdGeometry1!='Constraint' : # no selected constraint, just line or points
+    elif typeIdGeometry1 != 'Constraint' : # no selected constraint, just line or points
         #create the constraint
-        indexConstraint=mySketch.addConstraint(Sketcher.Constraint(myConstraint
-                 , indexObjectHavingPoint1,indexExtremiteLine1,indexObjectHavingPoint2,indexExtremiteLine2, cellContents))
+        indexConstraint = mySketch.addConstraint(Sketcher.Constraint(myConstraint
+                 , indexObjectHavingPoint1, indexExtremiteLine1, indexObjectHavingPoint2, indexExtremiteLine2, cellContents))
 
     # for all type, set the constraint'formula' (ex : 'spreadSheet.unAlias'
-    mySketch.setExpression('Constraints['+str(indexConstraint)+']',cellExpression)
+    mySketch.setExpression('Constraints[' + str(indexConstraint) + ']',cellExpression)
 
     # put Sketch window ahead
     activateSketchEditingWindow()
@@ -633,7 +632,7 @@ def main():
     if sheckBoxConstraintConflicState :
         #if App.activeDocument().isTouched(): # isTouched is not ok in Daily Freecad
         if 'Invalid' in mySketch.State :
-            a=QtWidgets.QMessageBox.question(None, "",
+            a = QtWidgets.QMessageBox.question(None, "",
                 "Constraints conflic detected. Cancel constraint creation ? ",
                 QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No, QtWidgets.QMessageBox.No)
             if a == QtWidgets.QMessageBox.Yes:
